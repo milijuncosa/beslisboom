@@ -8,9 +8,20 @@
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'lib/pdf.worker.js';
   </script>
   <style>
-    body { margin: 0; font-family: Arial; }
-    .pdf-container { position: relative; width: 80%; margin: 0 auto; }
-    canvas { width: 100%; display: block; }
+    body { margin: 0; font-family: Arial; text-align: center; }
+
+    .pdf-container {
+      position: relative;
+      width: 800px;  /* vaste breedte van het canvas */
+      height: 1000px; /* vaste hoogte van het canvas */
+      margin: 0 auto;
+    }
+
+    canvas {
+      width: 800px;
+      height: 1000px;
+      display: block;
+    }
 
     .btn-area {
       position: absolute;
@@ -30,35 +41,30 @@
 </div>
 
 <script>
-const pdfUrl = 'beslisboom.pdf'; // jouw PDF
+const pdfUrl = 'beslisboom.pdf';
 
 const canvas = document.getElementById('pdf-canvas');
 const btnStandaard = document.getElementById('btn-standaard');
 const btnNietStandaard = document.getElementById('btn-niet-standaard');
 
-// **Pixelwaarden zoals jij doorgegeven hebt**
+// Jouw doorgegeven pixelposities
 const origStandaard = {x: 200, y: 100, width: 100, height: 40};
 const origNiet = {x: 420, y: 100, width: 100, height: 40};
 
 function positionButtons() {
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = rect.width / canvas.width;
-  const scaleY = rect.height / canvas.height;
+  // Schaalfactor is 1, canvas is vast
+  btnStandaard.style.left = origStandaard.x + 'px';
+  btnStandaard.style.top = origStandaard.y + 'px';
+  btnStandaard.style.width = origStandaard.width + 'px';
+  btnStandaard.style.height = origStandaard.height + 'px';
 
-  // Standaard Change knop
-  btnStandaard.style.left = (origStandaard.x * scaleX) + 'px';
-  btnStandaard.style.top = (origStandaard.y * scaleY) + 'px';
-  btnStandaard.style.width = (origStandaard.width * scaleX) + 'px';
-  btnStandaard.style.height = (origStandaard.height * scaleY) + 'px';
-
-  // Niet-standaard Change knop
-  btnNietStandaard.style.left = (origNiet.x * scaleX) + 'px';
-  btnNietStandaard.style.top = (origNiet.y * scaleY) + 'px';
-  btnNietStandaard.style.width = (origNiet.width * scaleX) + 'px';
-  btnNietStandaard.style.height = (origNiet.height * scaleY) + 'px';
+  btnNietStandaard.style.left = origNiet.x + 'px';
+  btnNietStandaard.style.top = origNiet.y + 'px';
+  btnNietStandaard.style.width = origNiet.width + 'px';
+  btnNietStandaard.style.height = origNiet.height + 'px';
 }
 
-// Voeg klik-acties toe
+// Klikacties
 btnStandaard.addEventListener('click', () => {
   window.open('https://example.com/standaard-change', '_blank');
 });
@@ -69,18 +75,17 @@ btnNietStandaard.addEventListener('click', () => {
 // Render PDF
 pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
   pdf.getPage(1).then(page => {
-    const viewport = page.getViewport({ scale: 1.5 });
+    const viewport = page.getViewport({ scale: 1.0 }); // geen schaal, canvas vaste grootte
     const context = canvas.getContext('2d');
-    canvas.height = viewport.height;
     canvas.width = viewport.width;
+    canvas.height = viewport.height;
     page.render({ canvasContext: context, viewport: viewport }).promise.then(() => {
-      positionButtons(); // plaatsen na render
+      positionButtons();
     });
   });
 });
 
-// Pas knoppen opnieuw aan bij schermresize
-window.addEventListener('resize', positionButtons);
+// Geen resize nodig, canvas is vast
 </script>
 
 </body>
