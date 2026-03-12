@@ -12,8 +12,8 @@
 
     .pdf-container {
       position: relative;
-      width: 800px;  /* vaste breedte van het canvas */
-      height: 1000px; /* vaste hoogte van het canvas */
+      width: 800px;   /* vaste breedte */
+      height: 1000px; /* vaste hoogte */
       margin: 0 auto;
     }
 
@@ -25,8 +25,8 @@
 
     .btn-area {
       position: absolute;
-      background: rgba(255,0,0,0.3); /* tijdelijk zichtbaar voor testen */
-      cursor: pointer;
+      background: rgba(255,0,0,0.3); /* zichtbaar voor testen */
+      cursor: move; /* sleepbaar */
     }
   </style>
 </head>
@@ -42,17 +42,16 @@
 
 <script>
 const pdfUrl = 'beslisboom.pdf';
-
 const canvas = document.getElementById('pdf-canvas');
 const btnStandaard = document.getElementById('btn-standaard');
 const btnNietStandaard = document.getElementById('btn-niet-standaard');
 
-// Jouw doorgegeven pixelposities
+// Startwaarden voor test (kun je slepen)
 const origStandaard = {x: 200, y: 100, width: 100, height: 40};
 const origNiet = {x: 420, y: 100, width: 100, height: 40};
 
+// Plaats de knoppen
 function positionButtons() {
-  // Schaalfactor is 1, canvas is vast
   btnStandaard.style.left = origStandaard.x + 'px';
   btnStandaard.style.top = origStandaard.y + 'px';
   btnStandaard.style.width = origStandaard.width + 'px';
@@ -75,7 +74,7 @@ btnNietStandaard.addEventListener('click', () => {
 // Render PDF
 pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
   pdf.getPage(1).then(page => {
-    const viewport = page.getViewport({ scale: 1.0 }); // geen schaal, canvas vaste grootte
+    const viewport = page.getViewport({ scale: 1.0 });
     const context = canvas.getContext('2d');
     canvas.width = viewport.width;
     canvas.height = viewport.height;
@@ -85,7 +84,30 @@ pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
   });
 });
 
-// Geen resize nodig, canvas is vast
+// **Helper: maak sleepbaar en lees coördinaten uit**
+function makeDraggable(el) {
+  let offsetX, offsetY;
+  el.onmousedown = function(e) {
+    offsetX = e.clientX - el.offsetLeft;
+    offsetY = e.clientY - el.offsetTop;
+
+    document.onmousemove = function(e) {
+      el.style.left = (e.clientX - offsetX) + 'px';
+      el.style.top = (e.clientY - offsetY) + 'px';
+    };
+
+    document.onmouseup = function() {
+      document.onmousemove = null;
+      document.onmouseup = null;
+      console.log(el.id, 'x:', el.offsetLeft, 'y:', el.offsetTop, 'width:', el.offsetWidth, 'height:', el.offsetHeight);
+    };
+    e.preventDefault();
+  };
+}
+
+// Maak beide knoppen sleepbaar
+makeDraggable(btnStandaard);
+makeDraggable(btnNietStandaard);
 </script>
 
 </body>
