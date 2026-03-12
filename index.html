@@ -5,8 +5,8 @@
   <title>Beslisboom</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.12.313/pdf.min.js"></script>
   <style>
-    body { margin: 0; font-family: Arial; }
-    #pdf-canvas { width: 100%; height: 100vh; display: block; }
+    body { margin: 0; }
+    canvas { display: block; width: 100%; height: auto; }
   </style>
 </head>
 <body>
@@ -14,24 +14,22 @@
 <canvas id="pdf-canvas"></canvas>
 
 <script>
-  // PDF-bestand moet in dezelfde folder als index.html
-  const url = 'beslisboom.pdf';
+const url = 'beslisboom.pdf'; // moet exact zo heten
 
-  // PDF.js laden
-  const loadingTask = pdfjsLib.getDocument(url);
-  loadingTask.promise.then(pdf => {
-    pdf.getPage(1).then(page => {
-      const scale = 1.5;
-      const viewport = page.getViewport({ scale: scale });
-      const canvas = document.getElementById('pdf-canvas');
-      const context = canvas.getContext('2d');
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
-      page.render({ canvasContext: context, viewport: viewport });
-    });
-  }).catch(error => {
-    console.error('PDF laden mislukt:', error);
+const loadingTask = pdfjsLib.getDocument(url);
+loadingTask.promise.then(pdf => {
+  pdf.getPage(1).then(page => {
+    const viewport = page.getViewport({ scale: 1.5 });
+    const canvas = document.getElementById('pdf-canvas');
+    const context = canvas.getContext('2d');
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+    page.render({ canvasContext: context, viewport: viewport });
   });
+}).catch(err => {
+  console.error('PDF laden mislukt:', err);
+  document.body.innerHTML = '<p>PDF kon niet geladen worden. Controleer bestandsnaam en locatie.</p>';
+});
 </script>
 
 </body>
