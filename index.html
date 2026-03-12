@@ -14,8 +14,9 @@ body { margin:0; font-family:Arial, sans-serif; text-align:center; }
   position: relative;
   width: 100%;
   max-width: 800px;
-  aspect-ratio: 4/5; /* vaste verhouding 800x1000 */
+  aspect-ratio: 4/5; /* 800x1000 verhouding */
   margin: 0 auto;
+  overflow: hidden;
 }
 
 canvas {
@@ -33,13 +34,13 @@ canvas {
   width:100%;
   height:100%;
   z-index:10;
-  pointer-events: none; /* standaard geen interactie behalve voor rects */
+  pointer-events: none;
 }
 
 .svg-overlay rect {
   fill: transparent; /* volledig onzichtbaar */
   cursor: pointer;
-  pointer-events: all; /* rects zijn klikbaar */
+  pointer-events: all;
 }
 </style>
 </head>
@@ -55,22 +56,14 @@ const pdfUrl = 'beslisboom.pdf';
 const canvas = document.getElementById('pdf-canvas');
 const svgOverlay = document.getElementById('svg-overlay');
 
-// Definieer 2 knoppen: linksboven en rechtsboven
+// Twee knoppen: linker- en rechterbovenhoek
 const buttons = [
   {
-    // Links bovenin
-    x: 50,  // 50px vanaf links (op een 800px breed canvas)
-    y: 50,  // 50px vanaf boven (op een 1000px hoog canvas)
-    width: 150,
-    height: 50,
+    x: '0%',   y: '0%', width: '50%', height: '10%',
     url: 'https://example.com/standaard-change'
   },
   {
-    // Rechts bovenin
-    x: 600, // 800-150-50 = 600
-    y: 50,
-    width: 150,
-    height: 50,
+    x: '50%',  y: '0%', width: '50%', height: '10%',
     url: 'https://example.com/niet-standaard-change'
   }
 ];
@@ -88,24 +81,21 @@ pdfjsLib.getDocument(pdfUrl).promise.then(pdf=>{
   });
 });
 
-// Plaats de knoppen bovenin, in percentages
+// Plaats de SVG rects
 function drawSVGButtons() {
-  const cw = svgOverlay.clientWidth;
-  const ch = svgOverlay.clientHeight;
-  svgOverlay.innerHTML = ''; // oude rects verwijderen
-
+  svgOverlay.innerHTML = '';
   buttons.forEach(b => {
-    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    rect.setAttribute('x', (b.x/800*100) + '%');
-    rect.setAttribute('y', (b.y/1000*100) + '%');
-    rect.setAttribute('width', (b.width/800*100) + '%');
-    rect.setAttribute('height', (b.height/1000*100) + '%');
+    const rect = document.createElementNS("http://www.w3.org/2000/svg","rect");
+    rect.setAttribute('x', b.x);
+    rect.setAttribute('y', b.y);
+    rect.setAttribute('width', b.width);
+    rect.setAttribute('height', b.height);
     rect.addEventListener('click', ()=>window.open(b.url,'_blank'));
     svgOverlay.appendChild(rect);
   });
 }
 
-// Herpositioneer bij resize
+// Bij resize opnieuw tekenen
 window.addEventListener('resize', drawSVGButtons);
 
 </script>
