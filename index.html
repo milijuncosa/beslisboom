@@ -2,30 +2,54 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Beslisboom</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <title>Beslisboom Interactief</title>
+  <script src="lib/pdf.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'lib/pdf.worker.js';
+  </script>
   <style>
-    body { margin: 0; }
-    canvas { display: block; width: 100%; height: auto; }
+    body { margin: 0; font-family: Arial; text-align: center; }
+    .pdf-container { position: relative; width: 80%; margin: 0 auto; }
+
+    canvas { width: 100%; display: block; }
+
+    /* Stijl voor knoppen */
+    .btn {
+      position: absolute;
+      padding: 5px 10px;
+      background: #007bff;
+      color: white;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .btn:hover { background: #0056b3; }
   </style>
 </head>
 <body>
 
-<canvas id="pdf-canvas"></canvas>
+<div class="pdf-container">
+  <canvas id="pdf-canvas"></canvas>
+
+  <!-- Knoppen onder de juiste secties -->
+  <!-- Let op: top/left in pixels, afgemeten op het canvas -->
+  <a class="btn" href="https://example.com/standaard-change" target="_blank" style="top: 420px; left: 150px;">Standaard Change</a>
+  <a class="btn" href="https://example.com/niet-standaard-change" target="_blank" style="top: 600px; left: 150px;">Niet-standaard Change</a>
+</div>
 
 <script>
-const url = 'beslisboom.pdf'; // PDF moet in dezelfde folder als index.html
+const url = 'beslisboom.pdf'; // PDF in dezelfde folder
 
-// PDF.js laden
 const loadingTask = pdfjsLib.getDocument(url);
 loadingTask.promise.then(pdf => {
-  // Alleen eerste pagina tonen
   pdf.getPage(1).then(page => {
     const viewport = page.getViewport({ scale: 1.5 });
     const canvas = document.getElementById('pdf-canvas');
     const context = canvas.getContext('2d');
+
     canvas.height = viewport.height;
     canvas.width = viewport.width;
+
     page.render({ canvasContext: context, viewport: viewport });
   });
 }).catch(err => {
