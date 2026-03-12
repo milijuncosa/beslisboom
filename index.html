@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Beslisboom Interactief</title>
+<title>Beslisboom Interactief - Topdesk</title>
 <script src="lib/pdf.js"></script>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'lib/pdf.worker.js';
@@ -14,7 +14,7 @@ body { margin:0; font-family:Arial, sans-serif; text-align:center; }
   position: relative;
   width: 100%;
   max-width: 800px;
-  aspect-ratio: 4 / 5; /* 800x1000 verhouding vast */
+  aspect-ratio: 4/5; /* vaste verhouding 800x1000 */
   margin: 0 auto;
 }
 
@@ -26,12 +26,20 @@ canvas {
   position: relative;
 }
 
-.btn-area {
+.svg-overlay {
   position: absolute;
-  background: rgba(255,0,0,0.3); /* tijdelijk zichtbaar voor testen */
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  z-index:10;
+  pointer-events: none; /* standaard geen interactie behalve voor rects */
+}
+
+.svg-overlay rect {
+  fill: rgba(255,0,0,0.3); /* tijdelijk zichtbaar */
   cursor: pointer;
-  z-index: 10;
-  border: 1px solid blue; /* debug */
+  pointer-events: all; /* rects zijn wel klikbaar */
 }
 </style>
 </head>
@@ -39,42 +47,25 @@ canvas {
 
 <div class="pdf-container">
   <canvas id="pdf-canvas"></canvas>
-  <div id="btn-standaard" class="btn-area"></div>
-  <div id="btn-niet-standaard" class="btn-area"></div>
+  <svg class="svg-overlay" id="svg-overlay"></svg>
 </div>
 
 <script>
 const pdfUrl = 'beslisboom.pdf';
 const canvas = document.getElementById('pdf-canvas');
-const container = document.querySelector('.pdf-container');
-const btnStandaard = document.getElementById('btn-standaard');
-const btnNietStandaard = document.getElementById('btn-niet-standaard');
+const svgOverlay = document.getElementById('svg-overlay');
 
-// Originele pixelposities op 800x1000 canvas
-const origStandaard = {x:200,y:100,width:100,height:40};
-const origNiet = {x:420,y:100,width:100,height:40};
-
-// Zet knoppen op basis van percentages t.o.v container
-function positionButtons() {
-  const cw = container.clientWidth;
-  const ch = container.clientHeight;
-
-  const btns = [
-    {btn: btnStandaard, orig: origStandaard},
-    {btn: btnNietStandaard, orig: origNiet}
-  ];
-
-  btns.forEach(o=>{
-    o.btn.style.left = (o.orig.x/800*100) + '%';
-    o.btn.style.top = (o.orig.y/1000*100) + '%';
-    o.btn.style.width = (o.orig.width/800*100) + '%';
-    o.btn.style.height = (o.orig.height/1000*100) + '%';
-  });
-}
-
-// Klikacties
-btnStandaard.addEventListener('click', ()=>window.open('https://example.com/standaard-change','_blank'));
-btnNietStandaard.addEventListener('click', ()=>window.open('https://example.com/niet-standaard-change','_blank'));
+// Originele knoppen in pixels (800x1000)
+const buttons = [
+  {
+    x: 200, y: 100, width: 100, height: 40,
+    url: 'https://example.com/standaard-change'
+  },
+  {
+    x: 420, y: 100, width: 100, height: 40,
+    url: 'https://example.com/niet-standaard-change'
+  }
+];
 
 // Render PDF
 pdfjsLib.getDocument(pdfUrl).promise.then(pdf=>{
@@ -83,14 +74,32 @@ pdfjsLib.getDocument(pdfUrl).promise.then(pdf=>{
     canvas.width = viewport.width;
     canvas.height = viewport.height;
     const context = canvas.getContext('2d');
-    page.render({canvasContext:context, viewport:viewport}).promise.then(()=>{
-      positionButtons(); // knoppen positioneren na render
+    page.render({canvasContext: context, viewport: viewport}).promise.then(()=>{
+      drawSVGButtons();
     });
   });
 });
 
-// Herpositioneer bij resize
-window.addEventListener('resize', positionButtons);
+// Functie: plaats de SVG rects op basis van percentages
+function drawSVGButtons() {
+  const cw = svgOverlay.clientWidth;
+  const ch = svgOverlay.clientHeight;
+  svgOverlay.innerHTML = ''; // oude rects verwijderen
+
+  buttons.forEach(b => {
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute('x', (b.x/800*100) + '%');
+    rect.setAttribute('y', (b.y/1000*100) + '%');
+    rect.setAttribute('width', (b.width/800*100) + '%');
+    rect.setAttribute('height', (b.height/1000*100) + '%');
+    rect.addEventListener('click', ()=>window.open(b.url,'_blank'));
+    svgOverlay.appendChild(rect);
+  });
+}
+
+// Repositioneer bij resize
+window.addEventListener('resize', drawSVGButtons);
+
 </script>
 
 </body>
