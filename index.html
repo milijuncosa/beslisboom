@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Beslisboom Interactief - Topdesk</title>
+<title>Beslisboom Interactief</title>
 <script src="lib/pdf.js"></script>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'lib/pdf.worker.js';
@@ -13,18 +13,22 @@ body { margin:0; font-family:Arial, sans-serif; text-align:center; }
 .pdf-container {
   position: relative;
   width: 100%;
-  max-width: 800px;
+  max-width: 800px; /* optioneel */
   margin: 0 auto;
 }
 
 canvas {
   display: block;
+  width: 100%;
+  height: auto; /* behoudt verhoudingen */
 }
 
 .svg-overlay {
   position: absolute;
   top:0;
   left:0;
+  width:100%;
+  height:100%;
   z-index:10;
 }
 
@@ -46,35 +50,30 @@ canvas {
 const pdfUrl = 'beslisboom.pdf';
 const canvas = document.getElementById('pdf-canvas');
 const svgOverlay = document.getElementById('svg-overlay');
-const container = document.querySelector('.pdf-container');
 
 // Render PDF
-pdfjsLib.getDocument(pdfUrl).promise.then(pdf=>{
-  pdf.getPage(1).then(page=>{
+pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
+  pdf.getPage(1).then(page => {
     const viewport = page.getViewport({scale:1.0});
     canvas.width = viewport.width;
     canvas.height = viewport.height;
 
-    // Zet canvas grootte ook in CSS voor overlay
-    canvas.style.width = viewport.width + 'px';
-    canvas.style.height = viewport.height + 'px';
-
-    svgOverlay.setAttribute('width', viewport.width);
-    svgOverlay.setAttribute('height', viewport.height);
-
     const context = canvas.getContext('2d');
-    page.render({canvasContext:context, viewport:viewport}).promise.then(()=>{
-      drawSVGButtons(viewport.width, viewport.height);
+    page.render({canvasContext: context, viewport: viewport}).promise.then(() => {
+      drawSVGButtons();
     });
   });
 });
 
-// Twee knoppen: linker bovenkwart en rechter bovenkwart
-function drawSVGButtons(cw, ch) {
+// Plaats de 2 transparante knoppen: linker- en rechterbovenkwart
+function drawSVGButtons() {
   svgOverlay.innerHTML = '';
 
-  // linker bovenkwart (bovenste helft, linker kwart)
-  const rectLeft = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+  const cw = canvas.clientWidth;
+  const ch = canvas.clientHeight;
+
+  // Linkerbovenkwart
+  const rectLeft = document.createElementNS("http://www.w3.org/2000/svg","rect");
   rectLeft.setAttribute('x', 0);
   rectLeft.setAttribute('y', 0);
   rectLeft.setAttribute('width', cw/2);
@@ -82,8 +81,8 @@ function drawSVGButtons(cw, ch) {
   rectLeft.addEventListener('click', ()=>window.open('https://example.com/standaard-change','_blank'));
   svgOverlay.appendChild(rectLeft);
 
-  // rechter bovenkwart (bovenste helft, rechter kwart)
-  const rectRight = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+  // Rechterbovenkwart
+  const rectRight = document.createElementNS("http://www.w3.org/2000/svg","rect");
   rectRight.setAttribute('x', cw/2);
   rectRight.setAttribute('y', 0);
   rectRight.setAttribute('width', cw/2);
@@ -92,11 +91,8 @@ function drawSVGButtons(cw, ch) {
   svgOverlay.appendChild(rectRight);
 }
 
-// Bij window resize: update overlay position
-window.addEventListener('resize', ()=>{
-  svgOverlay.setAttribute('width', canvas.clientWidth);
-  svgOverlay.setAttribute('height', canvas.clientHeight);
-});
+// Herpositioneer bij resize
+window.addEventListener('resize', drawSVGButtons);
 
 </script>
 
