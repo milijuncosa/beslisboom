@@ -37,9 +37,9 @@ canvas {
 }
 
 .svg-overlay rect {
-  fill: rgba(255,0,0,0.3); /* tijdelijk zichtbaar */
+  fill: transparent; /* volledig onzichtbaar */
   cursor: pointer;
-  pointer-events: all; /* rects zijn wel klikbaar */
+  pointer-events: all; /* rects zijn klikbaar */
 }
 </style>
 </head>
@@ -55,14 +55,22 @@ const pdfUrl = 'beslisboom.pdf';
 const canvas = document.getElementById('pdf-canvas');
 const svgOverlay = document.getElementById('svg-overlay');
 
-// Originele knoppen in pixels (800x1000)
+// Definieer 2 knoppen: linksboven en rechtsboven
 const buttons = [
   {
-    x: 200, y: 100, width: 100, height: 40,
+    // Links bovenin
+    x: 50,  // 50px vanaf links (op een 800px breed canvas)
+    y: 50,  // 50px vanaf boven (op een 1000px hoog canvas)
+    width: 150,
+    height: 50,
     url: 'https://example.com/standaard-change'
   },
   {
-    x: 420, y: 100, width: 100, height: 40,
+    // Rechts bovenin
+    x: 600, // 800-150-50 = 600
+    y: 50,
+    width: 150,
+    height: 50,
     url: 'https://example.com/niet-standaard-change'
   }
 ];
@@ -74,13 +82,13 @@ pdfjsLib.getDocument(pdfUrl).promise.then(pdf=>{
     canvas.width = viewport.width;
     canvas.height = viewport.height;
     const context = canvas.getContext('2d');
-    page.render({canvasContext: context, viewport: viewport}).promise.then(()=>{
+    page.render({canvasContext:context, viewport:viewport}).promise.then(()=>{
       drawSVGButtons();
     });
   });
 });
 
-// Functie: plaats de SVG rects op basis van percentages
+// Plaats de knoppen bovenin, in percentages
 function drawSVGButtons() {
   const cw = svgOverlay.clientWidth;
   const ch = svgOverlay.clientHeight;
@@ -97,7 +105,7 @@ function drawSVGButtons() {
   });
 }
 
-// Repositioneer bij resize
+// Herpositioneer bij resize
 window.addEventListener('resize', drawSVGButtons);
 
 </script>
