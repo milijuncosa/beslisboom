@@ -1,19 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title></title>
-<style>
-body { font-family: Arial; margin:0; padding:0; }
-.pdf-container { width:100%; height:100vh; }
-iframe { width:100%; height:100%; border:none; }
-</style>
+  <meta charset="UTF-8">
+  <title>Beslisboom</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.12.313/pdf.min.js"></script>
+  <style>
+    body { margin: 0; font-family: Arial; }
+    #pdf-canvas { width: 100%; height: 100vh; display: block; }
+  </style>
 </head>
 <body>
 
-<div class="pdf-container">
-  <iframe src="beslisboom.pdf"></iframe>
-</div>
+<canvas id="pdf-canvas"></canvas>
+
+<script>
+  const url = 'beslisboom.pdf'; // Zorg dat dit bestand in dezelfde repo staat
+
+  const loadingTask = pdfjsLib.getDocument(url);
+  loadingTask.promise.then(pdf => {
+    pdf.getPage(1).then(page => { // Toont alleen pagina 1, je kan meerdere pagina’s toevoegen
+      const scale = 1.5;
+      const viewport = page.getViewport({scale: scale});
+      const canvas = document.getElementById('pdf-canvas');
+      const context = canvas.getContext('2d');
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+      page.render({ canvasContext: context, viewport: viewport });
+    });
+  });
+</script>
 
 </body>
 </html>
