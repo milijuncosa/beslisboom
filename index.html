@@ -14,17 +14,13 @@ body { margin:0; font-family:Arial, sans-serif; text-align:center; }
   position: relative;
   width: 100%;
   max-width: 800px;
-  aspect-ratio: 4/5; /* 800x1000 verhouding */
   margin: 0 auto;
-  overflow: hidden;
 }
 
 canvas {
-  width: 100%;
-  height: 100%;
   display: block;
-  z-index: 1;
-  position: relative;
+  width: 100%;
+  height: auto; /* behoudt juiste verhouding */
 }
 
 .svg-overlay {
@@ -40,7 +36,7 @@ canvas {
 .svg-overlay rect {
   fill: transparent; /* volledig onzichtbaar */
   cursor: pointer;
-  pointer-events: all;
+  pointer-events: all; /* rects klikbaar */
 }
 </style>
 </head>
@@ -55,17 +51,12 @@ canvas {
 const pdfUrl = 'beslisboom.pdf';
 const canvas = document.getElementById('pdf-canvas');
 const svgOverlay = document.getElementById('svg-overlay');
+const container = document.querySelector('.pdf-container');
 
-// Twee knoppen: linker- en rechterbovenhoek
+// Twee knoppen: linker- en rechterbovenhoek (bovenste helft)
 const buttons = [
-  {
-    x: '0%',   y: '0%', width: '50%', height: '10%',
-    url: 'https://example.com/standaard-change'
-  },
-  {
-    x: '50%',  y: '0%', width: '50%', height: '10%',
-    url: 'https://example.com/niet-standaard-change'
-  }
+  {x:0, y:0, width:50, height:50, url:'https://example.com/standaard-change'}, // linker boven
+  {x:50, y:0, width:50, height:50, url:'https://example.com/niet-standaard-change'} // rechter boven
 ];
 
 // Render PDF
@@ -74,6 +65,7 @@ pdfjsLib.getDocument(pdfUrl).promise.then(pdf=>{
     const viewport = page.getViewport({scale:1.0});
     canvas.width = viewport.width;
     canvas.height = viewport.height;
+    canvas.style.height = (canvas.height / canvas.width * 100) + 'vw'; // juiste verhouding in viewport
     const context = canvas.getContext('2d');
     page.render({canvasContext:context, viewport:viewport}).promise.then(()=>{
       drawSVGButtons();
@@ -81,21 +73,23 @@ pdfjsLib.getDocument(pdfUrl).promise.then(pdf=>{
   });
 });
 
-// Plaats de SVG rects
+// Plaats de knoppen in percentages over het canvas
 function drawSVGButtons() {
   svgOverlay.innerHTML = '';
-  buttons.forEach(b => {
+  const cw = canvas.clientWidth;
+  const ch = canvas.clientHeight;
+  buttons.forEach(b=>{
     const rect = document.createElementNS("http://www.w3.org/2000/svg","rect");
-    rect.setAttribute('x', b.x);
-    rect.setAttribute('y', b.y);
-    rect.setAttribute('width', b.width);
-    rect.setAttribute('height', b.height);
+    rect.setAttribute('x', b.x + '%');
+    rect.setAttribute('y', b.y + '%');
+    rect.setAttribute('width', b.width + '%');
+    rect.setAttribute('height', b.height + '%');
     rect.addEventListener('click', ()=>window.open(b.url,'_blank'));
     svgOverlay.appendChild(rect);
   });
 }
 
-// Bij resize opnieuw tekenen
+// Herpositioneer bij resize
 window.addEventListener('resize', drawSVGButtons);
 
 </script>
