@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Beslisboom</title>
-  <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <style>
     body { margin: 0; }
     canvas { display: block; width: 100%; height: auto; }
@@ -14,10 +14,12 @@
 <canvas id="pdf-canvas"></canvas>
 
 <script>
-const url = 'beslisboom.pdf'; // PDF moet in dezelfde folder staan
+const url = 'beslisboom.pdf'; // PDF moet in dezelfde folder als index.html
 
+// PDF.js laden
 const loadingTask = pdfjsLib.getDocument(url);
 loadingTask.promise.then(pdf => {
+  // Alleen eerste pagina tonen
   pdf.getPage(1).then(page => {
     const viewport = page.getViewport({ scale: 1.5 });
     const canvas = document.getElementById('pdf-canvas');
