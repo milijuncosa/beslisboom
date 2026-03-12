@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Beslisboom</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.12.313/pdf.min.js"></script>
+  <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
   <style>
     body { margin: 0; }
     canvas { display: block; width: 100%; height: auto; }
@@ -14,7 +14,7 @@
 <canvas id="pdf-canvas"></canvas>
 
 <script>
-const url = 'beslisboom.pdf'; // moet exact zo heten
+const url = 'beslisboom.pdf'; // PDF moet in dezelfde folder staan
 
 const loadingTask = pdfjsLib.getDocument(url);
 loadingTask.promise.then(pdf => {
