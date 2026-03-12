@@ -12,21 +12,22 @@
 
     .pdf-container {
       position: relative;
-      width: 800px;   /* vaste breedte */
-      height: 1000px; /* vaste hoogte */
+      width: 800px; /* vaste breedte voor Topdesk */
       margin: 0 auto;
     }
 
     canvas {
-      width: 800px;
-      height: 1000px;
+      width: 100%;   /* vult container breedte */
+      height: auto;  /* hoogte past zich aan, aspect ratio behouden */
       display: block;
     }
 
     .btn-area {
       position: absolute;
-      background: rgba(255,0,0,0.3); /* zichtbaar voor testen */
-      cursor: move; /* sleepbaar */
+      background: rgba(255,0,0,0.5); /* zichtbaar voor testen */
+      cursor: move;
+      z-index: 10;
+      pointer-events: auto;
     }
   </style>
 </head>
@@ -34,8 +35,6 @@
 
 <div class="pdf-container">
   <canvas id="pdf-canvas"></canvas>
-
-  <!-- Klikbare gebieden -->
   <div id="btn-standaard" class="btn-area"></div>
   <div id="btn-niet-standaard" class="btn-area"></div>
 </div>
@@ -43,6 +42,7 @@
 <script>
 const pdfUrl = 'beslisboom.pdf';
 const canvas = document.getElementById('pdf-canvas');
+const container = document.querySelector('.pdf-container');
 const btnStandaard = document.getElementById('btn-standaard');
 const btnNietStandaard = document.getElementById('btn-niet-standaard');
 
@@ -50,17 +50,20 @@ const btnNietStandaard = document.getElementById('btn-niet-standaard');
 const origStandaard = {x: 200, y: 100, width: 100, height: 40};
 const origNiet = {x: 420, y: 100, width: 100, height: 40};
 
-// Plaats de knoppen
+// Plaats de knoppen (schaal mee met canvas)
 function positionButtons() {
-  btnStandaard.style.left = origStandaard.x + 'px';
-  btnStandaard.style.top = origStandaard.y + 'px';
-  btnStandaard.style.width = origStandaard.width + 'px';
-  btnStandaard.style.height = origStandaard.height + 'px';
+  const scaleX = canvas.clientWidth / canvas.width;
+  const scaleY = canvas.clientHeight / canvas.height;
 
-  btnNietStandaard.style.left = origNiet.x + 'px';
-  btnNietStandaard.style.top = origNiet.y + 'px';
-  btnNietStandaard.style.width = origNiet.width + 'px';
-  btnNietStandaard.style.height = origNiet.height + 'px';
+  btnStandaard.style.left = (origStandaard.x * scaleX) + 'px';
+  btnStandaard.style.top = (origStandaard.y * scaleY) + 'px';
+  btnStandaard.style.width = (origStandaard.width * scaleX) + 'px';
+  btnStandaard.style.height = (origStandaard.height * scaleY) + 'px';
+
+  btnNietStandaard.style.left = (origNiet.x * scaleX) + 'px';
+  btnNietStandaard.style.top = (origNiet.y * scaleY) + 'px';
+  btnNietStandaard.style.width = (origNiet.width * scaleX) + 'px';
+  btnNietStandaard.style.height = (origNiet.height * scaleY) + 'px';
 }
 
 // Klikacties
@@ -84,9 +87,12 @@ pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
   });
 });
 
-// **Helper: maak sleepbaar en lees coördinaten uit**
+// Helper: sleepbare knoppen en coördinaten uitlezen
 function makeDraggable(el) {
+  el.style.position = 'absolute';
+  el.style.zIndex = 10;
   let offsetX, offsetY;
+
   el.onmousedown = function(e) {
     offsetX = e.clientX - el.offsetLeft;
     offsetY = e.clientY - el.offsetTop;
@@ -99,15 +105,18 @@ function makeDraggable(el) {
     document.onmouseup = function() {
       document.onmousemove = null;
       document.onmouseup = null;
+      // console toont de huidige positie in pixels
       console.log(el.id, 'x:', el.offsetLeft, 'y:', el.offsetTop, 'width:', el.offsetWidth, 'height:', el.offsetHeight);
     };
     e.preventDefault();
   };
 }
 
-// Maak beide knoppen sleepbaar
 makeDraggable(btnStandaard);
 makeDraggable(btnNietStandaard);
+
+// Pas knoppen opnieuw aan bij schermresize
+window.addEventListener('resize', positionButtons);
 </script>
 
 </body>
