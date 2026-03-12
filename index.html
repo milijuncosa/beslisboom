@@ -8,60 +8,79 @@
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'lib/pdf.worker.js';
   </script>
   <style>
-    body { margin: 0; font-family: Arial; text-align: center; }
+    body { margin: 0; font-family: Arial; }
     .pdf-container { position: relative; width: 80%; margin: 0 auto; }
-
     canvas { width: 100%; display: block; }
 
-    /* Stijl voor knoppen */
-    .btn {
+    .btn-area {
       position: absolute;
-      padding: 5px 10px;
-      background: #007bff;
-      color: white;
-      border-radius: 4px;
-      text-decoration: none;
-      font-weight: bold;
+      background: rgba(255,0,0,0.3); /* tijdelijk zichtbaar voor testen */
+      cursor: pointer;
     }
-    .btn:hover { background: #0056b3; }
   </style>
 </head>
 <body>
 
-<div class="pdf-container" style="position: relative; width: 80%; margin: 0 auto;">
-  <canvas id="pdf-canvas" style="width: 100%; display: block;"></canvas>
+<div class="pdf-container">
+  <canvas id="pdf-canvas"></canvas>
 
-  <!-- Zichtbare klikgebieden voor testen -->
-  <a href="https://example.com/standaard-change" target="_blank"
-     style="position: absolute; top: 10%; left: 20%; width: 100px; height: 40px; display: block; background: rgba(255,0,0,0.3);">
-     <!-- tijdelijk zichtbaar door rode transparantie -->
-  </a>
-
-  <a href="https://example.com/niet-standaard-change" target="_blank"
-     style="position: absolute; top: 10%; left: 50%; width: 100px; height: 40px; display: block; background: rgba(0,255,0,0.3);">
-     <!-- tijdelijk zichtbaar door groene transparantie -->
-  </a>
+  <!-- Klikbare gebieden -->
+  <div id="btn-standaard" class="btn-area"></div>
+  <div id="btn-niet-standaard" class="btn-area"></div>
 </div>
 
 <script>
-const url = 'beslisboom.pdf'; // PDF in dezelfde folder
+const pdfUrl = 'beslisboom.pdf'; // jouw PDF
 
-const loadingTask = pdfjsLib.getDocument(url);
-loadingTask.promise.then(pdf => {
+const canvas = document.getElementById('pdf-canvas');
+const btnStandaard = document.getElementById('btn-standaard');
+const btnNietStandaard = document.getElementById('btn-niet-standaard');
+
+// **Pixelwaarden zoals door jou gemeten**
+const origStandaard = {x: 200, y: 100, width: 100, height: 40};
+const origNiet = {x: 420, y: 100, width: 100, height: 40};
+
+function positionButtons() {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = rect.width / canvas.width;
+  const scaleY = rect.height / canvas.height;
+
+  // Standaard Change knop
+  btnStandaard.style.left = (origStandaard.x * scaleX) + 'px';
+  btnStandaard.style.top = (origStandaard.y * scaleY) + 'px';
+  btnStandaard.style.width = (origStandaard.width * scaleX) + 'px';
+  btnStandaard.style.height = (origStandaard.height * scaleY) + 'px';
+
+  // Niet-standaard Change knop
+  btnNietStandaard.style.left = (origNiet.x * scaleX) + 'px';
+  btnNietStandaard.style.top = (origNiet.y * scaleY) + 'px';
+  btnNietStandaard.style.width = (origNiet.width * scaleX) + 'px';
+  btnNietStandaard.style.height = (origNiet.height * scaleY) + 'px';
+}
+
+// Voeg klik-acties toe
+btnStandaard.addEventListener('click', () => {
+  window.open('https://example.com/standaard-change', '_blank');
+});
+btnNietStandaard.addEventListener('click', () => {
+  window.open('https://example.com/niet-standaard-change', '_blank');
+});
+
+// Render PDF
+pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
   pdf.getPage(1).then(page => {
     const viewport = page.getViewport({ scale: 1.5 });
-    const canvas = document.getElementById('pdf-canvas');
     const context = canvas.getContext('2d');
-
     canvas.height = viewport.height;
     canvas.width = viewport.width;
-
-    page.render({ canvasContext: context, viewport: viewport });
+    page.render({ canvasContext: context, viewport: viewport }).promise.then(() => {
+      positionButtons(); // plaatsen na render
+    });
   });
-}).catch(err => {
-  console.error('PDF laden mislukt:', err);
-  document.body.innerHTML = '<p>PDF kon niet geladen worden. Controleer bestandsnaam en locatie.</p>';
 });
+
+// Pas knoppen opnieuw aan bij schermresize
+window.addEventListener('resize', positionButtons);
 </script>
 
 </body>
