@@ -12,23 +12,21 @@
 
     .pdf-container {
       position: relative;
-      width: 800px; /* vaste breedte */
+      width: 800px;  /* vaste breedte van het canvas */
+      height: 1000px; /* vaste hoogte van het canvas */
       margin: 0 auto;
-      height: auto;
     }
 
     canvas {
       width: 800px;
-      height: auto;
+      height: 1000px;
       display: block;
     }
 
     .btn-area {
       position: absolute;
-      background: transparent; /* volledig onzichtbaar */
+      background: rgba(255,0,0,0.3); /* tijdelijk zichtbaar voor testen */
       cursor: pointer;
-      z-index: 10;
-      pointer-events: auto;
     }
   </style>
 </head>
@@ -44,15 +42,17 @@
 
 <script>
 const pdfUrl = 'beslisboom.pdf';
+
 const canvas = document.getElementById('pdf-canvas');
 const btnStandaard = document.getElementById('btn-standaard');
 const btnNietStandaard = document.getElementById('btn-niet-standaard');
 
-// Exacte pixelposities van de knoppen onder de PDF tekst
-const origStandaard = {x: 210, y: 250, width: 120, height: 40};     // pas aan naar jouw exacte positie
-const origNiet = {x: 420, y: 250, width: 140, height: 40};          // pas aan naar jouw exacte positie
+// Jouw doorgegeven pixelposities
+const origStandaard = {x: 200, y: 100, width: 100, height: 40};
+const origNiet = {x: 420, y: 100, width: 100, height: 40};
 
 function positionButtons() {
+  // Schaalfactor is 1, canvas is vast
   btnStandaard.style.left = origStandaard.x + 'px';
   btnStandaard.style.top = origStandaard.y + 'px';
   btnStandaard.style.width = origStandaard.width + 'px';
@@ -75,7 +75,7 @@ btnNietStandaard.addEventListener('click', () => {
 // Render PDF
 pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
   pdf.getPage(1).then(page => {
-    const viewport = page.getViewport({ scale: 1.0 });
+    const viewport = page.getViewport({ scale: 1.0 }); // geen schaal, canvas vaste grootte
     const context = canvas.getContext('2d');
     canvas.width = viewport.width;
     canvas.height = viewport.height;
@@ -84,6 +84,8 @@ pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
     });
   });
 });
+
+// Geen resize nodig, canvas is vast
 </script>
 
 </body>
